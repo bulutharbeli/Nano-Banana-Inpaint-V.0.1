@@ -1,0 +1,5 @@
+{
+  "name": "Nano Banana Node Workflow",
+  "description": "A node-based image editor that uses the Gemini 'Nano Banana' model to apply sequential edits to an image through a visual workflow.",
+  "requestFramePermissions": []
+}
