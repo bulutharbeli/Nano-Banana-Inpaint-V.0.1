@@ -1,11 +1,11 @@
-import React, { useState, useCallback, useRef, useEffect, ChangeEvent } from 'react';
+import React, { useState, useCallback, useRef, useEffect, ChangeEvent, Suspense } from 'react';
 import type { Node as INode, Connection, NodeData } from '../types';
 import { NodeType } from '../types';
 import { fileToBase64 } from '../utils/fileUtils';
 import Node from './Node';
 import { TrashIcon } from './icons';
-import MaskEditor from './MaskEditor';
-import ABCompareSlider from './ABCompareSlider';
+const MaskEditor = React.lazy(() => import('./MaskEditor'));
+const ABCompareSlider = React.lazy(() => import('./ABCompareSlider'));
 
 interface NodeCanvasProps {
   nodes: INode[];
@@ -232,7 +232,7 @@ const NodeCanvas: React.FC<NodeCanvasProps> = ({ nodes, connections, setNodes, s
 
   const [connectionPaths, setConnectionPaths] = useState<string[]>([]);
   useEffect(() => {
-    const nodeElements = new Map(nodes.map(n => [n.id, document.getElementById(`node-${n.id}`)]));
+    const nodeElements = new Map<string, HTMLElement | null>(nodes.map(n => [n.id, document.getElementById(`node-${n.id}`)]));
     const paths = connections.map(conn => {
         const sourceNode = nodes.find(n => n.id === conn.sourceNodeId);
         const targetNode = nodes.find(n => n.id === conn.targetNodeId);
@@ -242,8 +242,8 @@ const NodeCanvas: React.FC<NodeCanvasProps> = ({ nodes, connections, setNodes, s
         const targetEl = nodeElements.get(targetNode.id);
 
         const nodeWidth = 288; // w-72
-        const sourceHeight = (sourceEl?.offsetHeight || 150);
-        const targetHeight = (targetEl?.offsetHeight || 150);
+        const sourceHeight = ((sourceEl as HTMLElement | null)?.offsetHeight || 150);
+        const targetHeight = ((targetEl as HTMLElement | null)?.offsetHeight || 150);
 
         const startX = sourceNode.position.x + nodeWidth;
         const startY = sourceNode.position.y + sourceHeight / 2;
@@ -491,13 +491,15 @@ const NodeCanvas: React.FC<NodeCanvasProps> = ({ nodes, connections, setNodes, s
                         <div className="w-full aspect-video flex items-center justify-center text-gray-400">Comparing...</div>
                     ) : node.data.error ? (
                         <p className="text-red-500 text-sm mt-2">{node.data.error}</p>
-                    ) : (node.data.imageBase64A && node.data.imageBase64B && node.data.mimeTypeA && node.data.mimeTypeB) ? (
-                        <ABCompareSlider
-                            base64ImageA={node.data.imageBase64A}
-                            mimeTypeA={node.data.mimeTypeA}
-                            base64ImageB={node.data.imageBase64B}
-                            mimeTypeB={node.data.mimeTypeB}
-                        />
+            ) : (node.data.imageBase64A && node.data.imageBase64B && node.data.mimeTypeA && node.data.mimeTypeB) ? (
+                        <Suspense fallback={<div className="w-full aspect-video flex items-center justify-center text-gray-400">Loading...</div>}>
+                          <ABCompareSlider
+                              base64ImageA={node.data.imageBase64A}
+                              mimeTypeA={node.data.mimeTypeA}
+                              base64ImageB={node.data.imageBase64B}
+                              mimeTypeB={node.data.mimeTypeB}
+                          />
+                        </Suspense>
                     ) : (
                     <div className="w-full aspect-video border-2 border-dashed border-gray-500 rounded-md flex items-center justify-center text-gray-400">
                         Awaiting comparison
@@ -526,14 +528,16 @@ const NodeCanvas: React.FC<NodeCanvasProps> = ({ nodes, connections, setNodes, s
       </div>
     </div>
     {isMaskEditorOpen && maskEditorNode && (
-        <MaskEditor
-            isOpen={isMaskEditorOpen}
-            onClose={() => setIsMaskEditorOpen(false)}
-            onSave={handleSaveMask}
-            backgroundImageSrc={maskEditorNode.data.outputImageBase64}
-            backgroundImageMimeType={maskEditorNode.data.mimeType}
-            initialMaskSrc={maskEditorNode.data.maskImageBase64}
-        />
+        <Suspense fallback={null}>
+          <MaskEditor
+              isOpen={isMaskEditorOpen}
+              onClose={() => setIsMaskEditorOpen(false)}
+              onSave={handleSaveMask}
+              backgroundImageSrc={maskEditorNode.data.outputImageBase64}
+              backgroundImageMimeType={maskEditorNode.data.mimeType}
+              initialMaskSrc={maskEditorNode.data.maskImageBase64}
+          />
+        </Suspense>
     )}
     </>
   );

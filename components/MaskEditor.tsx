@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { useRef, useEffect, useState, useCallback } from 'react';
 import { BrushIcon, EraserIcon, CloseIcon } from './icons';
 
 interface MaskEditorProps {

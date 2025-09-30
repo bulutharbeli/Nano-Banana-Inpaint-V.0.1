@@ -1,12 +1,17 @@
 
-import { GoogleGenAI, Modality } from "@google/genai";
-import type { GenerateContentResponse } from "@google/genai";
-
-if (!process.env.API_KEY) {
-  throw new Error("API_KEY environment variable not set");
+// Dynamically import the SDK to keep it out of the initial bundle
+// and instantiate the client only when needed.
+let genAiClient: any | null = null;
+async function getGenAi() {
+  if (!process.env.API_KEY) {
+    throw new Error("API_KEY environment variable not set");
+  }
+  if (!genAiClient) {
+    const mod: any = await import("@google/genai");
+    genAiClient = new mod.GoogleGenAI({ apiKey: process.env.API_KEY });
+  }
+  return genAiClient;
 }
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const editImageWithNanoBanana = async (
   base64ImageData: string,
@@ -36,11 +41,12 @@ export const editImageWithNanoBanana = async (
 
     parts.push({ text: prompt });
 
-    const response: GenerateContentResponse = await ai.models.generateContent({
+    const ai = await getGenAi();
+    const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image-preview',
       contents: { parts },
       config: {
-        responseModalities: [Modality.IMAGE, Modality.TEXT],
+        responseModalities: ["IMAGE", "TEXT"],
       },
     });
 
