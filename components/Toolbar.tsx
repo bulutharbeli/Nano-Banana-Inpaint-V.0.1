@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { PlayIcon, AddIcon, ChevronDownIcon } from './icons';
 import { NodeType } from '../types';
 

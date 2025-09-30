@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import { memo, useCallback } from 'react';
 import type { Node as NodeType, Node as INode } from '../types';
 import { NodeType as NodeTypeEnum } from '../types';
 import { TrashIcon, LockClosedIcon, LockOpenIcon } from './icons';
@@ -112,4 +112,4 @@ const Node: React.FC<NodeProps> = ({ node, isSelected, onNodeMouseDown, onConnec
   );
 };
 
-export default React.memo(Node);
+export default memo(Node);

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { Node, Connection, NodeData } from './types';
 import { NodeType } from './types';
 import NodeCanvas from './components/NodeCanvas';
